@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-
+const helmet = require("helmet");
 const dbTestRoutes = require("./routes/dbTest.routes");
 const authRoutes = require("./routes/auth.routes");
 const configRoutes = require("./routes/config.routes");
@@ -13,9 +13,18 @@ const liveOrderComboRoutes = require("./routes/liveOrderCombos.routes");
 const dayEndRoutes = require("./routes/dayEnd.routes");
 const cancelRoutes = require("./routes/cancel.routes");
 const discountRoutes = require("./routes/discount.routes");
+const rateLimit = require("express-rate-limit");
 
 const app = express();
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: { message: "Too many login attempts. Try again later." }
+});
 
+app.use("/api/auth/login", loginLimiter);
+app.use("/api/auth/manager-login", loginLimiter);
+app.use(helmet());
 app.use(cors());
 app.use(express.json());
 app.get("/", (req, res) => {
