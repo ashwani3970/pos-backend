@@ -49,4 +49,13 @@ app.use("/api", dayEndRoutes);
 app.use("/api", cancelRoutes);
 app.use("/api", discountRoutes);
 
+
+// ================= GLOBAL ERROR HANDLER =================
+app.use((err, req, res, next) => {
+  console.error("GLOBAL ERROR:", err);
+
+  res.status(err.status || 500).json({
+    message: err.message || "Unexpected server error"
+  });
+});
 module.exports = app;
