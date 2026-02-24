@@ -1,0 +1,8 @@
+module.exports = {
+  OPEN: "OPEN",
+  PUNCHED: "PUNCHED",
+  READY: "READY",
+  DISPATCHED: "DISPATCHED",
+  CANCELLED: "CANCELLED",
+  CLOSED: "CLOSED"
+};

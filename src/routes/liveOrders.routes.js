@@ -259,9 +259,11 @@ router.post("/orders/:orderId/send-to-kitchen", auth, async (req, res) => {
        SET order_status = 'PUNCHED'
        WHERE live_order_id = ?
          AND restaurant_id = ?
-         AND order_status = 'OPEN'
+         const ORDER_STATUS = require("../constants/orderStatus");
+
+          AND order_status = ?
          AND cancelled_at IS NULL`,
-      [orderId, restaurantId]
+      [orderId, restaurantId,ORDER_STATUS.OPEN]
     );
 
     if (result.affectedRows === 0) {
