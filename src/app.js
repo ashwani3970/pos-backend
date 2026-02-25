@@ -16,6 +16,7 @@ const discountRoutes = require("./routes/discount.routes");
 const rateLimit = require("express-rate-limit");
 
 const app = express();
+app.set("trust proxy", true);
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 20,
