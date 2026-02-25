@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const db = require("../config/db");
 const auth = require("../middlewares/auth.middleware");
-
+const ORDER_STATUS = require("../constants/orderStatus");
 /**
  * CREATE LIVE ORDER
  */
@@ -256,14 +256,17 @@ router.post("/orders/:orderId/send-to-kitchen", auth, async (req, res) => {
   try {
     const [result] = await db.query(
       `UPDATE live_orders
-       SET order_status = 'PUNCHED'
+       SET order_status = ?
        WHERE live_order_id = ?
          AND restaurant_id = ?
-         const ORDER_STATUS = require("../constants/orderStatus");
-
-          AND order_status = ?
+         AND order_status = ?
          AND cancelled_at IS NULL`,
-      [orderId, restaurantId,ORDER_STATUS.OPEN]
+      [
+        ORDER_STATUS.PUNCHED,
+        orderId,
+        restaurantId,
+        ORDER_STATUS.OPEN
+      ]
     );
 
     if (result.affectedRows === 0) {
