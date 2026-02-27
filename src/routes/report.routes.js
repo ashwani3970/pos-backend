@@ -30,18 +30,18 @@ router.get("/reports/daily", auth, async (req, res) => {
     );
 
     // 2️⃣ Payment wise
-    const [payments] = await db.query(
-      `SELECT 
-          t.tender_name,
-          SUM(op.amount) AS amount
-       FROM order_payments op
-       JOIN tenders t ON t.tender_id = op.tender_id
-       JOIN orders o ON o.order_id = op.order_id
-       WHERE o.restaurant_id = ?
-         AND DATE(o.closed_at) = ?
-       GROUP BY t.tender_name`,
-      [restaurantId, date]
-    );
+        const [payments] = await db.query(
+          `SELECT 
+              t.tender_name,
+              SUM(op.amount) AS amount
+          FROM order_payments op
+          JOIN payment_tenders t ON t.tender_id = op.tender_id
+          JOIN orders o ON o.order_id = op.order_id
+          WHERE o.restaurant_id = ?
+            AND DATE(o.closed_at) = ?
+          GROUP BY t.tender_name`,
+          [restaurantId, date]
+        );
 
     // 3️⃣ Item wise sales
     const [items] = await db.query(
