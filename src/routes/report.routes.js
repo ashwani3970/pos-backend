@@ -6,7 +6,7 @@ const auth = require("../middlewares/auth.middleware");
 /**
  * DAILY SALES REPORT
  */
-router.get("/reports/daily", auth, async (req, res) => {
+router.get("/daily", auth, async (req, res) => {
   const restaurantId = req.user.restaurant_id;
   const { date } = req.query;
 
