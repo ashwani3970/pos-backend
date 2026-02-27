@@ -50,7 +50,7 @@ app.use("/api", liveOrderComboRoutes);
 app.use("/api", dayEndRoutes);
 app.use("/api", cancelRoutes);
 app.use("/api", discountRoutes);
-app.use("/", reportRoutes);
+app.use("/api/reports", reportRoutes);
 
 // ================= GLOBAL ERROR HANDLER =================
 app.use((err, req, res, next) => {
