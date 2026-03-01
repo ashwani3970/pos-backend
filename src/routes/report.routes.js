@@ -58,19 +58,19 @@ router.get("/daily", auth, async (req, res) => {
        ORDER BY total_qty DESC`,
       [restaurantId, date]
     );
-    // 4️⃣ Category wise summary
+// 4️⃣ Category wise summary
 const [categorySummary] = await db.query(
   `SELECT 
-      c.category_name,
+      ic.category_name,
       SUM(oi.qty) as total_qty,
-      SUM(oi.final_amount) as total_sales
+      SUM(oi.qty * oi.price) as total_sales
    FROM order_items oi
    JOIN items i ON oi.item_id = i.item_id
-   JOIN categories c ON i.category_id = c.category_id
+   JOIN item_categories ic ON i.category_id = ic.category_id
    JOIN orders o ON oi.order_id = o.order_id
    WHERE o.restaurant_id = ?
      AND DATE(o.closed_at) = ?
-   GROUP BY c.category_name
+   GROUP BY ic.category_name
    ORDER BY total_sales DESC`,
   [restaurantId, date]
 );
@@ -78,20 +78,20 @@ const [categorySummary] = await db.query(
 // 5️⃣ Category + Size summary
 const [categorySizeSummary] = await db.query(
   `SELECT 
-      c.category_name,
+      ic.category_name,
       i.item_name,
       s.size_name,
       SUM(oi.qty) as total_qty,
-      SUM(oi.final_amount) as total_sales
+      SUM(oi.qty * oi.price) as total_sales
    FROM order_items oi
    JOIN items i ON oi.item_id = i.item_id
-   JOIN categories c ON i.category_id = c.category_id
-   LEFT JOIN sizes s ON oi.size_id = s.size_id
+   JOIN item_categories ic ON i.category_id = ic.category_id
+   LEFT JOIN item_sizes s ON oi.size_id = s.size_id
    JOIN orders o ON oi.order_id = o.order_id
    WHERE o.restaurant_id = ?
      AND DATE(o.closed_at) = ?
-   GROUP BY c.category_name, i.item_name, s.size_name
-   ORDER BY c.category_name, total_sales DESC`,
+   GROUP BY ic.category_name, i.item_name, s.size_name
+   ORDER BY ic.category_name, total_sales DESC`,
   [restaurantId, date]
 );
 
