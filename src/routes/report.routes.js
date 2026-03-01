@@ -8,13 +8,13 @@ const auth = require("../middlewares/auth.middleware");
  */
 router.get("/daily", auth, async (req, res) => {
   const restaurantId = req.user.restaurant_id;
-  const { date } = req.query;
+  const { fromDate, toDate } = req.query;
 
-  if (!date) {
-    return res.status(400).json({ message: "Date is required" });
-  }
+    if (!fromDate || !toDate) {
+      return res.status(400).json({ message: "Date range required" });
+    }
 
-  try {
+    try {
     // 1️⃣ Summary
     const [[summary]] = await db.query(
       `SELECT 
@@ -38,7 +38,7 @@ router.get("/daily", auth, async (req, res) => {
           JOIN payment_tenders t ON t.tender_id = op.tender_id
           JOIN orders o ON o.order_id = op.order_id
           WHERE o.restaurant_id = ?
-            AND DATE(o.closed_at) = ?
+            AND DATE(o.closed_at) BETWEEN ? AND ?
           GROUP BY t.tender_name`,
           [restaurantId, date]
         );
@@ -53,7 +53,7 @@ router.get("/daily", auth, async (req, res) => {
        JOIN items i ON i.item_id = oi.item_id
        JOIN orders o ON o.order_id = oi.order_id
        WHERE o.restaurant_id = ?
-         AND DATE(o.closed_at) = ?
+         AND DATE(o.closed_at) BETWEEN ? AND ?
        GROUP BY i.item_name
        ORDER BY total_qty DESC`,
       [restaurantId, date]
@@ -69,7 +69,7 @@ const [categorySummary] = await db.query(
    JOIN item_categories ic ON i.category_id = ic.category_id
    JOIN orders o ON oi.order_id = o.order_id
    WHERE o.restaurant_id = ?
-     AND DATE(o.closed_at) = ?
+     AND DATE(o.closed_at) BETWEEN ? AND ?
    GROUP BY ic.category_name
    ORDER BY total_sales DESC`,
   [restaurantId, date]
@@ -89,7 +89,7 @@ const [categorySizeSummary] = await db.query(
    LEFT JOIN item_sizes s ON oi.size_id = s.size_id
    JOIN orders o ON oi.order_id = o.order_id
    WHERE o.restaurant_id = ?
-     AND DATE(o.closed_at) = ?
+     AND DATE(o.closed_at) BETWEEN ? AND ?
    GROUP BY ic.category_name, i.item_name, s.size_name
    ORDER BY ic.category_name, total_sales DESC`,
   [restaurantId, date]
