@@ -63,7 +63,7 @@ const [categorySummary] = await db.query(
   `SELECT 
       ic.category_name,
       SUM(oi.qty) as total_qty,
-      SUM(oi.qty * oi.price) as total_sales
+      SUM(oi.final_amount) as total_sales
    FROM order_items oi
    JOIN items i ON oi.item_id = i.item_id
    JOIN item_categories ic ON i.category_id = ic.category_id
@@ -82,7 +82,7 @@ const [categorySizeSummary] = await db.query(
       i.item_name,
       s.size_name,
       SUM(oi.qty) as total_qty,
-      SUM(oi.qty * oi.price) as total_sales
+      SUM(oi.final_amount) as total_sales
    FROM order_items oi
    JOIN items i ON oi.item_id = i.item_id
    JOIN item_categories ic ON i.category_id = ic.category_id
