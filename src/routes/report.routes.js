@@ -9,11 +9,9 @@ const auth = require("../middlewares/auth.middleware");
 router.get("/daily", auth, async (req, res) => {
   const restaurantId = req.user.restaurant_id;
   const { fromDate, toDate } = req.query;
-
     if (!fromDate || !toDate) {
       return res.status(400).json({ message: "Date range required" });
     }
-
     try {
     // 1️⃣ Summary
     const [[summary]] = await db.query(
@@ -23,10 +21,10 @@ router.get("/daily", auth, async (req, res) => {
           SUM(discount_amount) AS total_discount,
           SUM(net_amount) AS net_sales,
           AVG(net_amount) AS avg_bill
-       FROM orders
-       WHERE restaurant_id = ?
-         AND DATE(closed_at) = ?`,
-      [restaurantId, date]
+      FROM orders
+      WHERE restaurant_id = ?
+        AND DATE(closed_at) BETWEEN ? AND ?`,
+      [restaurantId, fromDate, toDate]
     );
 
     // 2️⃣ Payment wise
@@ -40,7 +38,7 @@ router.get("/daily", auth, async (req, res) => {
           WHERE o.restaurant_id = ?
             AND DATE(o.closed_at) BETWEEN ? AND ?
           GROUP BY t.tender_name`,
-          [restaurantId, date]
+          [restaurantId, fromDate, toDate]
         );
 
     // 3️⃣ Item wise sales
@@ -56,7 +54,7 @@ router.get("/daily", auth, async (req, res) => {
          AND DATE(o.closed_at) BETWEEN ? AND ?
        GROUP BY i.item_name
        ORDER BY total_qty DESC`,
-      [restaurantId, date]
+      [restaurantId, fromDate, toDate]
     );
 // 4️⃣ Category wise summary
 const [categorySummary] = await db.query(
@@ -72,7 +70,7 @@ const [categorySummary] = await db.query(
      AND DATE(o.closed_at) BETWEEN ? AND ?
    GROUP BY ic.category_name
    ORDER BY total_sales DESC`,
-  [restaurantId, date]
+  [restaurantId, fromDate, toDate]
 );
 
 // 5️⃣ Category + Size summary
@@ -92,7 +90,7 @@ const [categorySizeSummary] = await db.query(
      AND DATE(o.closed_at) BETWEEN ? AND ?
    GROUP BY ic.category_name, i.item_name, s.size_name
    ORDER BY ic.category_name, total_sales DESC`,
-  [restaurantId, date]
+  [restaurantId, fromDate, toDate]
 );
 
     res.json({
