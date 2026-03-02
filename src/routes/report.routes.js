@@ -123,7 +123,6 @@ router.get("/transactions", auth, async (req, res) => {
       `SELECT 
           o.order_no,
           DATE(o.closed_at) as bill_date,
-          o.created_at as open_time,
           o.closed_at as close_time,
           o.order_type,
           o.customer_name,
