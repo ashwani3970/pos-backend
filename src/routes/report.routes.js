@@ -130,14 +130,10 @@ router.get("/transactions", auth, async (req, res) => {
           o.customer_mobile,
           o.total_amount,
           o.discount_amount,
-          o.net_amount,
-          GROUP_CONCAT(pt.tender_name) as payment_modes
+          o.net_amount
        FROM orders o
-       LEFT JOIN order_payments op ON o.order_id = op.order_id
-       LEFT JOIN payment_tenders pt ON pt.tender_id = op.tender_id
        WHERE o.restaurant_id = ?
          AND DATE(o.closed_at) BETWEEN ? AND ?
-       GROUP BY o.order_id
        ORDER BY o.closed_at DESC`,
       [restaurantId, fromDate, toDate]
     );
