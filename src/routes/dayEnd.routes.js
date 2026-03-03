@@ -81,7 +81,15 @@ router.post("/day-end/lock", auth, async (req, res) => {
        VALUES (?, CURDATE(), NOW(), ?)`,
       [restaurantId, userId]
     );
-
+    
+    // 4️⃣ Reset order sequence for next day
+    await db.query(
+      `UPDATE order_sequence
+      SET last_order_no = 0
+      WHERE restaurant_id = ?`,
+      [restaurantId]
+    );
+    
     res.json({ message: "Day locked successfully" });
 
   } catch (err) {
