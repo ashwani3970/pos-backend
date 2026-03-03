@@ -61,8 +61,10 @@ router.post("/day-end/lock", auth, async (req, res) => {
     // 2️⃣ Check open orders
     const [openOrders] = await db.query(
       `SELECT 1
-       FROM live_orders
-       WHERE restaurant_id = ?`,
+      FROM live_orders
+      WHERE restaurant_id = ?
+        AND order_status IN ('PUNCHED','READY','DISPATCHED')
+      LIMIT 1`,
       [restaurantId]
     );
 
