@@ -51,7 +51,7 @@ router.delete("/orders/live/item/:id", auth, async (req, res) => {
        SET loi.is_active = 0
        WHERE loi.id = ?
          AND lo.restaurant_id = ?
-         AND lo.order_status = 'OPEN'
+         AND lo.order_status = 'DRAFT'
          AND (loi.kitchen_status = 'PENDING' OR loi.kitchen_status IS NULL)`,
       [id, restaurantId]
     );
