@@ -1,5 +1,5 @@
 module.exports = {
-  OPEN: "OPEN",
+  DRAFT: "DRAFT",
   PUNCHED: "PUNCHED",
   READY: "READY",
   DISPATCHED: "DISPATCHED",
