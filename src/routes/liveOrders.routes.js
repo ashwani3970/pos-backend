@@ -17,7 +17,7 @@ const [[existing]] = await db.query(
    LEFT JOIN live_order_items li 
      ON lo.live_order_id = li.live_order_id
    WHERE lo.restaurant_id = ?
-     AND lo.order_status = 'OPEN'
+     AND lo.order_status = 'DRAFT'
      AND lo.cancelled_at IS NULL
    GROUP BY lo.live_order_id
    HAVING COUNT(li.id) = 0
@@ -76,7 +76,7 @@ if (existing) {
     `INSERT INTO live_orders
      (restaurant_id, order_no, order_type, customer_name, customer_mobile,
       payment_status, order_status, opened_at, created_by)
-     VALUES (?, ?, ?, ?, ?, ?, 'OPEN', NOW(), ?)`,
+     VALUES (?, ?, ?, ?, ?, ?, 'DRAFT', NOW(), ?)`,
     [
       restaurantId,
       orderNo,
