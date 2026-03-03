@@ -167,6 +167,51 @@ router.get("/orders/live/:orderId", auth, async (req, res) => {
 });
 
 /**
+ * UPDATE LIVE ORDER DETAILS (called on Submit)
+ */
+router.patch("/orders/live/:id", auth, async (req, res) => {
+
+  const { id } = req.params;
+  const restaurantId = req.user.restaurant_id;
+
+  const {
+    order_type,
+    customer_name,
+    customer_mobile
+  } = req.body;
+
+  try {
+
+    await db.query(
+      `UPDATE live_orders
+       SET order_type = COALESCE(?, order_type),
+           customer_name = COALESCE(?, customer_name),
+           customer_mobile = COALESCE(?, customer_mobile)
+       WHERE live_order_id = ?
+         AND restaurant_id = ?`,
+      [
+        order_type,
+        customer_name,
+        customer_mobile,
+        id,
+        restaurantId
+      ]
+    );
+
+    res.json({ message: "Live order updated successfully" });
+
+  } catch (err) {
+    console.error("LIVE ORDER UPDATE ERROR:", err);
+    res.status(500).json({ message: "Update failed" });
+  }
+
+});
+
+
+
+
+
+/**
  * GET DISPATCHED ORDERS (PENDING FOR CASHIER)
  */
 router.get("/orders/pending", auth, async (req, res) => {
