@@ -206,6 +206,65 @@ router.patch("/orders/live/:id", auth, async (req, res) => {
   }
 
 });
+/**
+ * CANCEL DRAFT ORDER (Cashier Only)
+ */
+router.delete("/orders/live/:orderId/cancel", auth, async (req, res) => {
+  const { orderId } = req.params;
+  const restaurantId = req.user.restaurant_id;
+
+  const conn = await db.getConnection();
+
+  try {
+    await conn.beginTransaction();
+
+    // 1️⃣ Check status first
+    const [[order]] = await conn.query(
+      `SELECT order_status
+       FROM live_orders
+       WHERE live_order_id = ?
+         AND restaurant_id = ?`,
+      [orderId, restaurantId]
+    );
+
+    if (!order || order.order_status !== 'DRAFT') {
+      await conn.rollback();
+      conn.release();
+      return res.status(400).json({
+        message: "Only DRAFT orders can be cancelled"
+      });
+    }
+
+    // 2️⃣ Delete items
+    await conn.query(
+      `DELETE FROM live_order_items
+       WHERE live_order_id = ?`,
+      [orderId]
+    );
+
+    // 3️⃣ Delete live order
+    await conn.query(
+      `DELETE FROM live_orders
+       WHERE live_order_id = ?`,
+      [orderId]
+    );
+
+    await conn.commit();
+    conn.release();
+
+    res.json({ message: "Order cancelled successfully" });
+
+  } catch (err) {
+    await conn.rollback();
+    conn.release();
+    console.error("CANCEL ERROR:", err);
+    res.status(500).json({ message: "Cancel failed" });
+  }
+});
+
+
+
+
 
 
 
