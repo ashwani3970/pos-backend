@@ -69,42 +69,46 @@ router.post("/orders/:orderId/close", auth, async (req, res) => {
 
     // 6️⃣ Insert FINAL ORDER (MATCHES DB EXACTLY)
     const [orderResult] = await conn.query(
-      `INSERT INTO orders
-       (
-         restaurant_id,
-         order_no,
-         order_type,
-         customer_name,
-         customer_mobile,
-         payment_status,
-         opened_at,
-         closed_at,
-         closed_by,
-         total_amount,
-         discount_type,
-         discount_value,
-         discount_amount,
-         discounted_by,
-         net_amount
-       )
-       VALUES (?, ?, ?, ?, ?, 'PAID',
-               ?, NOW(), ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        restaurantId,
-        order.order_no,
-        order.order_type,
-        order.customer_name,
-        order.customer_mobile,
-        order.opened_at,
-        userId,
-        totalAmount,
-        order.discount_type,
-        order.discount_value,
-        discountAmount,
-        order.discounted_by,
-        netAmount
-      ]
-    );
+        `INSERT INTO orders
+        (
+          restaurant_id,
+          order_no,
+          order_type,
+          customer_name,
+          customer_mobile,
+          payment_status,
+          opened_at,
+          punched_at,
+          dispatched_at,
+          closed_at,
+          closed_by,
+          total_amount,
+          discount_type,
+          discount_value,
+          discount_amount,
+          discounted_by,
+          net_amount
+        )
+        VALUES (?, ?, ?, ?, ?, 'PAID',
+                ?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          restaurantId,
+          order.order_no,
+          order.order_type,
+          order.customer_name,
+          order.customer_mobile,
+          order.opened_at,
+          order.punched_at || null,
+          order.dispatched_at || null,
+          userId,
+          totalAmount,
+          order.discount_type,
+          order.discount_value,
+          discountAmount,
+          order.discounted_by,
+          netAmount
+        ]
+      );
 
     const finalOrderId = orderResult.insertId;
 

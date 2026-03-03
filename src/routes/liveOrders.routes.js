@@ -358,7 +358,8 @@ router.post("/orders/:orderId/send-to-kitchen", auth, async (req, res) => {
   try {
     const [result] = await db.query(
       `UPDATE live_orders
-       SET order_status = ?
+       SET order_status = ?,
+           punched_at = NOW()
        WHERE live_order_id = ?
          AND restaurant_id = ?
          AND order_status = ?
@@ -378,6 +379,7 @@ router.post("/orders/:orderId/send-to-kitchen", auth, async (req, res) => {
     }
 
     res.json({ message: "Order sent to kitchen" });
+
   } catch (err) {
     console.error("SEND TO KITCHEN ERROR:", err);
     res.status(500).json({ message: "Failed to send order to kitchen" });
