@@ -209,8 +209,6 @@ router.patch("/orders/live/:id", auth, async (req, res) => {
 
 
 
-
-
 /**
  * GET DISPATCHED ORDERS (PENDING FOR CASHIER)
  */
@@ -310,7 +308,7 @@ router.post("/orders/:orderId/send-to-kitchen", auth, async (req, res) => {
         ORDER_STATUS.PUNCHED,
         orderId,
         restaurantId,
-        ORDER_STATUS.OPEN
+        ORDER_STATUS.DRAFT
       ]
     );
 
