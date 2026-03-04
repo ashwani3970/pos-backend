@@ -107,37 +107,36 @@ router.post("/orders/live/:orderId/combo", auth, async (req, res) => {
 
     // 2️⃣ Insert combo parent row
     const [parentResult] = await db.query(
-      `INSERT INTO live_order_items
-       (live_order_id, item_name, price, is_combo_parent)
-       VALUES (?, ?, ?, 1)`,
-      [
-        restaurantId,
-        orderId,
-        combo.combo_name,
-        combo.combo_price
-      ]
-    );
+        `INSERT INTO live_order_items
+        (live_order_id, combo_id, qty, price, is_combo_parent)
+        VALUES (?, ?, ?, ?, 1)`,
+        [
+          orderId,
+          combo_id,
+          1,
+          combo.combo_price
+        ]
+      );
 
-    const parentId = parentResult.insertId;
+      const parentId = parentResult.insertId;
 
     // 3️⃣ Insert combo items (price = 0)
     for (const item of items) {
 
-      await db.query(
-        `INSERT INTO live_order_items
-        (live_order_id, item_id, size_id, qty, price, combo_parent_id)
-        VALUES (?, ?, ?, ?, 0, ?)`,
-        [
-          restaurantId,
-          orderId,
-          item.item_id,
-          item.size_id || null,
-          item.qty || 1,
-          parentId
-        ]
-      );
+        await db.query(
+          `INSERT INTO live_order_items
+          (live_order_id, item_id, size_id, qty, price, combo_parent_id)
+          VALUES (?, ?, ?, ?, 0, ?)`,
+          [
+            orderId,
+            item.item_id,
+            item.size_id || null,
+            item.qty || 1,
+            parentId
+          ]
+        );
 
-    }
+      }
 
     res.json({ message: "Combo added successfully" });
 
