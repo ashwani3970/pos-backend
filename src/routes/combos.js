@@ -85,33 +85,70 @@ router.get("/combos/:comboId", auth, async (req, res) => {
  */
 router.post("/orders/live/:orderId/combo", auth, async (req, res) => {
 
-  const { orderId } = req.params;
-  const { items } = req.body;
+    const { orderId } = req.params;
+  const { combo_id, items } = req.body;
   const restaurantId = req.user.restaurant_id;
 
   try {
 
+    // 1️⃣ Get combo details
+    const [comboRows] = await db.query(
+      `SELECT combo_name, combo_price
+       FROM combos
+       WHERE combo_id = ? AND restaurant_id = ?`,
+      [combo_id, restaurantId]
+    );
+
+    if (comboRows.length === 0) {
+      return res.status(400).json({ message: "Invalid combo" });
+    }
+
+    const combo = comboRows[0];
+
+    // 2️⃣ Insert combo parent row
+    const [parentResult] = await db.query(
+      `INSERT INTO live_order_items
+       (restaurant_id, live_order_id, item_name, price, is_combo_parent)
+       VALUES (?, ?, ?, ?, 1)`,
+      [
+        restaurantId,
+        orderId,
+        combo.combo_name,
+        combo.combo_price
+      ]
+    );
+
+    const parentId = parentResult.insertId;
+
+    // 3️⃣ Insert combo items (price = 0)
     for (const item of items) {
 
       await db.query(
         `INSERT INTO live_order_items
-        (live_order_id, item_id, size_id, qty)
-        VALUES (?, ?, ?, ?)`,
+        (restaurant_id, live_order_id, item_id, size_id, qty, price, combo_parent_id)
+        VALUES (?, ?, ?, ?, ?, 0, ?)`,
         [
+          restaurantId,
           orderId,
           item.item_id,
           item.size_id || null,
-          item.qty || 1
+          item.qty || 1,
+          parentId
         ]
       );
 
     }
 
-    res.json({ message: "Combo added to order" });
+    res.json({ message: "Combo added successfully" });
 
   } catch (err) {
+
     console.error("COMBO ADD ERROR:", err);
-    res.status(500).json({ message: "Failed to add combo" });
+
+    res.status(500).json({
+      message: "Failed to add combo"
+    });
+
   }
 
 });
