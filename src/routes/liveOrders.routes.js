@@ -348,21 +348,22 @@ router.post("/orders/:orderId/send-to-kitchen", auth, async (req, res) => {
   const restaurantId = req.user.restaurant_id;
 
   try {
-    const [result] = await db.query(
-      `UPDATE live_orders
-       SET order_status = ?,
-           punched_at = NOW()
-       WHERE live_order_id = ?
-         AND restaurant_id = ?
-         AND order_status = ?
-         AND cancelled_at IS NULL`,
-      [
-        ORDER_STATUS.PUNCHED,
-        orderId,
-        restaurantId,
-        ORDER_STATUS.DRAFT
-      ]
-    );
+      const [result] = await db.query(
+        `UPDATE live_orders
+        SET order_status = ?,
+            punched_at = NOW()
+        WHERE live_order_id = ?
+          AND restaurant_id = ?
+          AND order_status IN (?,?)
+          AND cancelled_at IS NULL`,
+        [
+          ORDER_STATUS.PUNCHED,
+          orderId,
+          restaurantId,
+          ORDER_STATUS.DRAFT,
+          ORDER_STATUS.PUNCHED
+        ]
+      );
 
     if (result.affectedRows === 0) {
       return res.status(400).json({
