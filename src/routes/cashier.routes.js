@@ -188,6 +188,14 @@ for (const i of items) {
 
     await conn.commit();
 
+        await conn.query(
+          `INSERT INTO order_timeline
+          (restaurant_id, order_id, event, event_time)
+          VALUES (?, ?, 'CLOSED', NOW())`,
+          [restaurantId, finalOrderId]
+        );
+
+
     res.json({
       message: "Order closed successfully",
       order_id: finalOrderId,

@@ -91,6 +91,15 @@ if (existing) {
   await conn.commit();
   conn.release();
 
+      await conn.query(
+        `INSERT INTO order_timeline
+        (restaurant_id, live_order_id, event, event_time)
+        VALUES (?, ?, 'CREATED', NOW())`,
+        [restaurantId, result.insertId]
+      );
+
+
+
   res.json({
     live_order_id: result.insertId,
     order_no: orderNo
@@ -377,6 +386,14 @@ router.post("/orders/:orderId/send-to-kitchen", auth, async (req, res) => {
         message: "Order not found, already sent, or cancelled"
       });
     }
+
+        await db.query(
+          `INSERT INTO order_timeline
+          (restaurant_id, live_order_id, event, event_time)
+          VALUES (?, ?, 'PUNCHED', NOW())`,
+          [restaurantId, orderId]
+        );
+
 
     res.json({ message: "Order sent to kitchen" });
 

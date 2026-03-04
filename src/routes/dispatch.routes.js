@@ -55,6 +55,15 @@ router.post("/dispatch/order/:orderId", auth, async (req, res) => {
       });
     }
 
+
+    await db.query(
+      `INSERT INTO order_timeline
+      (restaurant_id, live_order_id, event, event_time)
+      VALUES (?, ?, 'DISPATCHED', NOW())`,
+      [restaurantId, orderId]
+    );
+
+
     res.json({ message: "Order dispatched" });
   } catch (err) {
     console.error("DISPATCH ERROR:", err);

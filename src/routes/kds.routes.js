@@ -101,6 +101,15 @@ router.post("/kds/item/:itemRowId/done", auth, async (req, res) => {
     }
 
     await conn.commit();
+
+      await conn.query(
+        `INSERT INTO order_timeline
+        (restaurant_id, live_order_id, event, event_time)
+        VALUES (?, ?, 'READY', NOW())`,
+        [restaurantId, liveOrderId]
+      );
+
+
     res.json({ message: "Item marked DONE" });
 
   } catch (err) {
