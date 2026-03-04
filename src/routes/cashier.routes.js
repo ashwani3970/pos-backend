@@ -171,6 +171,14 @@ await conn.query(
   [restaurantId, finalOrderId]
 );
 
+// Link timeline events to final order
+await conn.query(
+  `UPDATE order_timeline
+   SET order_id = ?
+   WHERE live_order_id = ?`,
+  [finalOrderId, orderId]
+);
+
 // 🔟 Cleanup live tables
 await conn.query(
   "DELETE FROM live_order_items WHERE live_order_id = ?",
