@@ -10,7 +10,7 @@ const liveOrderItemRoutes = require("./routes/liveOrderItems.routes");
 const kdsRoutes = require("./routes/kds.routes");
 const dispatchRoutes = require("./routes/dispatch.routes");
 const cashierRoutes = require("./routes/cashier.routes");
-const liveOrderComboRoutes = require("./routes/liveOrderCombos.routes");
+
 const dayEndRoutes = require("./routes/dayEnd.routes");
 const cancelRoutes = require("./routes/cancel.routes");
 const discountRoutes = require("./routes/discount.routes");
@@ -50,7 +50,6 @@ app.use("/api", liveOrderItemRoutes);
 app.use("/api", kdsRoutes);
 app.use("/api", dispatchRoutes);
 app.use("/api", cashierRoutes);
-app.use("/api", liveOrderComboRoutes);
 app.use("/api", dayEndRoutes);
 app.use("/api", cancelRoutes);
 app.use("/api", discountRoutes);
