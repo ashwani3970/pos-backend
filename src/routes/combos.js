@@ -51,11 +51,11 @@ router.get("/combos/:comboId", auth, async (req, res) => {
         i.item_name,
         s.size_id,
         s.size_name
-       FROM combo_group_items cgi
-       JOIN items i ON cgi.item_id = i.item_id
-       LEFT JOIN item_sizes s ON cgi.size_id = s.size_id
-       JOIN combo_groups g ON cgi.group_id = g.group_id
-       WHERE g.combo_id = ?`,
+      FROM combo_group_items cgi
+      JOIN items i ON cgi.item_id = i.item_id
+      LEFT JOIN item_sizes s ON cgi.size_id = s.size_id
+      JOIN combo_groups g ON cgi.group_id = g.group_id
+      WHERE g.combo_id = ?`,
       [comboId]
     );
 
