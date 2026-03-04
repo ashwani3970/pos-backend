@@ -88,17 +88,15 @@ if (existing) {
     ]
   );
 
-  await conn.commit();
-  conn.release();
+        await db.query(
+          `INSERT INTO order_timeline
+          (restaurant_id, live_order_id, event, event_time)
+          VALUES (?, ?, 'CREATED', NOW())`,
+          [restaurantId, result.insertId]
+        );
 
-      await conn.query(
-        `INSERT INTO order_timeline
-        (restaurant_id, live_order_id, event, event_time)
-        VALUES (?, ?, 'CREATED', NOW())`,
-        [restaurantId, result.insertId]
-      );
-
-
+    await conn.commit();
+      conn.release();
 
   res.json({
     live_order_id: result.insertId,
@@ -245,18 +243,26 @@ router.delete("/orders/live/:orderId/cancel", auth, async (req, res) => {
     }
 
     // 2️⃣ Delete items
-    await conn.query(
-      `DELETE FROM live_order_items
-       WHERE live_order_id = ?`,
-      [orderId]
-    );
+        await conn.query(
+          `DELETE FROM live_order_items
+          WHERE live_order_id = ?`,
+          [orderId]
+        );
 
-    // 3️⃣ Delete live order
-    await conn.query(
-      `DELETE FROM live_orders
-       WHERE live_order_id = ?`,
-      [orderId]
-    );
+        // 👇 ADD HERE
+        await conn.query(
+          `INSERT INTO order_timeline
+          (restaurant_id, live_order_id, event, event_time)
+          VALUES (?, ?, 'CANCELLED', NOW())`,
+          [restaurantId, orderId]
+        );
+
+        // 3️⃣ Delete live order
+        await conn.query(
+          `DELETE FROM live_orders
+          WHERE live_order_id = ?`,
+          [orderId]
+        );
 
     await conn.commit();
     conn.release();
@@ -307,29 +313,6 @@ router.get("/orders/pending", auth, async (req, res) => {
   }
 });
 
-/**
- * MARK ORDER AS DISPATCHED
- */
-router.post("/orders/:orderId/dispatch", auth, async (req, res) => {
-  const { orderId } = req.params;
-  const restaurantId = req.user.restaurant_id;
-
-  try {
-    await db.query(
-      `UPDATE live_orders
-       SET order_status = 'DISPATCHED',
-           dispatched_at = NOW()
-       WHERE live_order_id = ?
-         AND restaurant_id = ?`,
-      [orderId, restaurantId]
-    );
-
-    res.json({ message: "Order dispatched" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Dispatch failed" });
-  }
-});
 
 /**
  * UPDATE PAYMENT STATUS (FROM PUNCH SCREEN)
