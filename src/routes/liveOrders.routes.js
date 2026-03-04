@@ -354,14 +354,16 @@ router.post("/orders/:orderId/send-to-kitchen", auth, async (req, res) => {
             punched_at = NOW()
         WHERE live_order_id = ?
           AND restaurant_id = ?
-          AND order_status IN (?,?)
+          AND order_status IN (?,?,?,?)
           AND cancelled_at IS NULL`,
         [
           ORDER_STATUS.PUNCHED,
           orderId,
           restaurantId,
           ORDER_STATUS.DRAFT,
-          ORDER_STATUS.PUNCHED
+          ORDER_STATUS.PUNCHED,
+          ORDER_STATUS.READY,
+          ORDER_STATUS.DISPATCHED
         ]
       );
 
