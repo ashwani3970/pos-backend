@@ -88,7 +88,7 @@ if (existing) {
     ]
   );
 
-        await db.query(
+        await conn.query(
           `INSERT INTO order_timeline
           (restaurant_id, live_order_id, event, event_time)
           VALUES (?, ?, 'CREATED', NOW())`,

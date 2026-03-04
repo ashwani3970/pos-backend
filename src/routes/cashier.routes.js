@@ -118,11 +118,9 @@ for (const i of items) {
 
   // proportional discount
   const itemDiscount =
-    totalAmount > 0
-      ? (itemTotal / totalAmount) * discountAmount
-      : 0;
-
-  const finalItemAmount = Math.max(itemTotal - itemDiscount, 0);
+  totalAmount > 0
+    ? Math.round((itemTotal / totalAmount) * discountAmount * 100) / 100
+    : 0;
 
   await conn.query(
     `INSERT INTO order_items
@@ -159,42 +157,26 @@ for (const i of items) {
 }
 
 
-    // 8️⃣ Payments
-    for (const p of payments) {
-      await conn.query(
-        `INSERT INTO order_payments
-         (order_id, tender_id, amount)
-         VALUES (?, ?, ?)`,
-        [finalOrderId, p.tender_id, Number(p.amount)]
-      );
-    }
-
     // 9️⃣ Timeline
-    await conn.query(
-      `INSERT INTO order_timeline (order_id, event, event_time)
-       VALUES (?, 'CLOSED', NOW())`,
-      [finalOrderId]
-    );
+await conn.query(
+  `INSERT INTO order_timeline
+   (restaurant_id, order_id, event, event_time)
+   VALUES (?, ?, 'CLOSED', NOW())`,
+  [restaurantId, finalOrderId]
+);
 
-    // 🔟 Cleanup live tables
-    await conn.query(
-      "DELETE FROM live_order_items WHERE live_order_id = ?",
-      [orderId]
-    );
-    await conn.query(
-      "DELETE FROM live_orders WHERE live_order_id = ?",
-      [orderId]
-    );
+// 🔟 Cleanup live tables
+await conn.query(
+  "DELETE FROM live_order_items WHERE live_order_id = ?",
+  [orderId]
+);
 
-    await conn.commit();
+await conn.query(
+  "DELETE FROM live_orders WHERE live_order_id = ?",
+  [orderId]
+);
 
-        await conn.query(
-          `INSERT INTO order_timeline
-          (restaurant_id, order_id, event, event_time)
-          VALUES (?, ?, 'CLOSED', NOW())`,
-          [restaurantId, finalOrderId]
-        );
-
+await conn.commit();
 
     res.json({
       message: "Order closed successfully",
