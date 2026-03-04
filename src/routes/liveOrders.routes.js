@@ -393,5 +393,37 @@ router.get("/ping", auth, async (req, res) => {
 });
 
 
+/**
+ * GET ACTIVE DINE-IN ORDERS (for adding more items)
+ */
+router.get("/orders/active-dinein", auth, async (req, res) => {
+
+  const restaurantId = req.user.restaurant_id;
+
+  try {
+
+    const [rows] = await db.query(
+      `SELECT
+        live_order_id,
+        order_no,
+        order_status,
+        opened_at
+       FROM live_orders
+       WHERE restaurant_id = ?
+         AND order_type = 'DINE_IN'
+         AND order_status IN ('PUNCHED','READY','DISPATCHED')
+       ORDER BY opened_at`,
+      [restaurantId]
+    );
+
+    res.json(rows);
+
+  } catch (err) {
+    console.error("ACTIVE DINE-IN ERROR:", err);
+    res.status(500).json({ message: "Failed to load active dine-in orders" });
+  }
+
+});
+
 
 module.exports = router;
