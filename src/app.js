@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
+
 const dbTestRoutes = require("./routes/dbTest.routes");
 const authRoutes = require("./routes/auth.routes");
 const configRoutes = require("./routes/config.routes");
@@ -13,11 +14,13 @@ const liveOrderComboRoutes = require("./routes/liveOrderCombos.routes");
 const dayEndRoutes = require("./routes/dayEnd.routes");
 const cancelRoutes = require("./routes/cancel.routes");
 const discountRoutes = require("./routes/discount.routes");
-const rateLimit = require("express-rate-limit");
 const reportRoutes = require("./routes/report.routes");
-const liveOrdersRoutes = require("./routes/liveOrders.routes");
+const comboRoutes = require("./routes/combos");
+
+const rateLimit = require("express-rate-limit");
 
 const app = express();
+app.set("trust proxy", true);
 app.set("trust proxy", true);
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -52,7 +55,8 @@ app.use("/api", dayEndRoutes);
 app.use("/api", cancelRoutes);
 app.use("/api", discountRoutes);
 app.use("/api/reports", reportRoutes);
-app.use("/api", liveOrdersRoutes);
+
+app.use("/api", comboRoutes);
 
 // ================= GLOBAL ERROR HANDLER =================
 app.use((err, req, res, next) => {
