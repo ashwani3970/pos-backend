@@ -114,13 +114,18 @@ router.post("/orders/:orderId/close", auth, async (req, res) => {
 
     // 7️⃣ Insert order items (WITH DISCOUNT BREAKUP)
 for (const i of items) {
-  const itemTotal = (Number(i.price) || 0) * i.qty;
 
-  // proportional discount
+  const price = Number(i.price) || 0;
+  const qty = Number(i.qty) || 0;
+
+  const itemTotal = price * qty;
+
   const itemDiscount =
-  totalAmount > 0
-    ? Math.round((itemTotal / totalAmount) * discountAmount * 100) / 100
-    : 0;
+    totalAmount > 0
+      ? (itemTotal / totalAmount) * discountAmount
+      : 0;
+
+  const finalItemAmount = Math.max(itemTotal - itemDiscount, 0);
 
   await conn.query(
     `INSERT INTO order_items
@@ -144,16 +149,17 @@ for (const i of items) {
       i.item_id || null,
       i.combo_id || null,
       i.size_id || null,
-      i.qty,
-      Number(i.price) || 0,          // rate
-      Number(i.price) || 0,          // original_rate
-      itemTotal,                     // amount (before discount)
-      itemDiscount,                  // discount_amount
-      finalItemAmount,               // final_amount
+      qty,
+      price,
+      price,
+      itemTotal,
+      itemDiscount,
+      finalItemAmount,
       i.added_at,
       i.kitchen_done_at
     ]
   );
+
 }
 
 
