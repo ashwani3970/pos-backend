@@ -15,6 +15,7 @@ const cancelRoutes = require("./routes/cancel.routes");
 const discountRoutes = require("./routes/discount.routes");
 const rateLimit = require("express-rate-limit");
 const reportRoutes = require("./routes/report.routes");
+const liveOrdersRoutes = require("./routes/liveOrders.routes");
 
 const app = express();
 app.set("trust proxy", true);
@@ -51,6 +52,7 @@ app.use("/api", dayEndRoutes);
 app.use("/api", cancelRoutes);
 app.use("/api", discountRoutes);
 app.use("/api/reports", reportRoutes);
+app.use("/api", liveOrdersRoutes);
 
 // ================= GLOBAL ERROR HANDLER =================
 app.use((err, req, res, next) => {
