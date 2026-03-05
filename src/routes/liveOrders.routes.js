@@ -150,9 +150,24 @@ router.get("/orders/live/:orderId", auth, async (req, res) => {
 
     // 3️⃣ Calculate subtotal
     let subtotal = 0;
-    items.forEach(i => {
-      subtotal += (i.price || 0) * i.qty;
-    });
+
+      items.forEach(i => {
+
+        // combo parent
+        if (i.is_combo_parent) {
+          subtotal += (Number(i.price) || 0) * i.qty;
+          return;
+        }
+
+        // combo child → ignore
+        if (i.combo_parent_id) {
+          return;
+        }
+
+        // normal item
+        subtotal += (Number(i.price) || 0) * i.qty;
+
+      });
 
     const discountAmount = Number(order?.discount_amount || 0);
     const finalAmount = Math.max(subtotal - discountAmount, 0);
