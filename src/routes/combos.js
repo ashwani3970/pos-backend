@@ -112,7 +112,7 @@ router.post("/orders/live/:orderId/combo", auth, async (req, res) => {
 
     const [parentResult] = await db.query(
       `INSERT INTO live_order_items
-      (live_order_id, combo_id, price, qty, is_combo_parent, kds_status)
+      (live_order_id, combo_id, price, qty, is_combo_parent, kitchen_status)
       VALUES (?, ?, ?, ?, 1, 'DONE')`,
       [
         orderId,
