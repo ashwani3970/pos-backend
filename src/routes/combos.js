@@ -128,8 +128,8 @@ router.post("/orders/live/:orderId/combo", auth, async (req, res) => {
 
       await db.query(
         `INSERT INTO live_order_items
-        (live_order_id, item_id, size_id, qty, combo_parent_id)
-        VALUES (?, ?, ?, ?, ?)`,
+        (live_order_id, item_id, size_id, qty, combo_parent_id, price)
+        VALUES (?, ?, ?, ?, ?, 0)`,
         [
           orderId,
           item.item_id,
