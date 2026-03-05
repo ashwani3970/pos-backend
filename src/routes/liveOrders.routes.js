@@ -121,18 +121,19 @@ router.get("/orders/live/:orderId", auth, async (req, res) => {
   try {
     // 1️⃣ Fetch items
     const [items] = await db.query(
-      `SELECT 
-         loi.id,
-         i.item_name,
-         s.size_name,
-         s.price,
-         loi.qty
-       FROM live_order_items loi
-       JOIN items i ON i.item_id = loi.item_id
-       LEFT JOIN item_sizes s ON s.size_id = loi.size_id
-       JOIN live_orders lo ON lo.live_order_id = loi.live_order_id
-       WHERE loi.live_order_id = ?
-         AND lo.restaurant_id = ?`,
+      `SELECT
+        loi.*,
+        i.item_name,
+        s.size_name,
+        s.price,
+        c.combo_name,
+        c.combo_price
+        FROM live_order_items loi
+        LEFT JOIN items i ON loi.item_id = i.item_id
+        LEFT JOIN item_sizes s ON loi.size_id = s.size_id
+        LEFT JOIN combos c ON loi.combo_id = c.combo_id
+        WHERE loi.live_order_id = ?
+        ORDER BY loi.live_order_item_id`,
       [orderId, restaurantId]
     );
 
