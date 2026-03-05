@@ -85,13 +85,16 @@ router.get("/combos/:comboId", auth, async (req, res) => {
  */
 router.post("/orders/live/:orderId/combo", auth, async (req, res) => {
 
-    const { orderId } = req.params;
+  const { orderId } = req.params;
   const { combo_id, items } = req.body;
   const restaurantId = req.user.restaurant_id;
 
   try {
 
-    // 1️⃣ Get combo details
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ message: "Combo items missing" });
+    }
+
     const [comboRows] = await db.query(
       `SELECT combo_name, combo_price
        FROM combos
@@ -105,42 +108,46 @@ router.post("/orders/live/:orderId/combo", auth, async (req, res) => {
 
     const combo = comboRows[0];
 
-    // 2️⃣ Insert combo parent row
+    await db.query("START TRANSACTION");
+
     const [parentResult] = await db.query(
+      `INSERT INTO live_order_items
+      (live_order_id, combo_id, combo_price, qty, is_combo_parent)
+      VALUES (?, ?, ?, ?, 1)`,
+      [
+        orderId,
+        combo_id,
+        combo.combo_price,
+        1
+      ]
+    );
+
+    const parentId = parentResult.insertId;
+
+    for (const item of items) {
+
+      await db.query(
         `INSERT INTO live_order_items
-        (live_order_id, combo_id, qty, is_combo_parent)
-        VALUES (?, ?, ?,  1)`,
+        (live_order_id, item_id, size_id, qty, combo_parent_id)
+        VALUES (?, ?, ?, ?, ?)`,
         [
           orderId,
-          combo_id,
-          1,
-          combo.combo_price
+          item.item_id,
+          item.size_id || null,
+          item.qty || 1,
+          parentId
         ]
       );
 
-      const parentId = parentResult.insertId;
+    }
 
-    // 3️⃣ Insert combo items (price = 0)
-    for (const item of items) {
-
-        await db.query(
-          `INSERT INTO live_order_items
-          (live_order_id, item_id, size_id, qty, combo_parent_id)
-          VALUES (?, ?, ?, ?, ?)`,
-          [
-            orderId,
-            item.item_id,
-            item.size_id || null,
-            item.qty || 1,
-            parentId
-          ]
-        );
-
-      }
+    await db.query("COMMIT");
 
     res.json({ message: "Combo added successfully" });
 
   } catch (err) {
+
+    await db.query("ROLLBACK");
 
     console.error("COMBO ADD ERROR:", err);
 
