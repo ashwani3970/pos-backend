@@ -120,6 +120,7 @@ router.post("/orders/live/:orderId/combo", auth, async (req, res) => {
         combo.combo_price,
         1
       ]
+
     );
 
     const parentId = parentResult.insertId;
