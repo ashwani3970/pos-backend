@@ -2,16 +2,19 @@ const express = require("express");
 const router = express.Router();
 const db = require("../config/db");
 const auth = require("../middlewares/auth.middleware");
-
 router.post("/orders/live/:orderId/item", auth, async (req, res) => {
+
   const { item_id, size_id, qty } = req.body;
   const { orderId } = req.params;
   const restaurantId = req.user.restaurant_id;
 
   try {
-    // 1️⃣ Validate order belongs to restaurant
+
+    // 1️⃣ Validate order
     const [orderRows] = await db.query(
-      "SELECT * FROM live_orders WHERE live_order_id = ? AND restaurant_id = ?",
+      `SELECT live_order_id
+       FROM live_orders
+       WHERE live_order_id = ? AND restaurant_id = ?`,
       [orderId, restaurantId]
     );
 
@@ -19,25 +22,63 @@ router.post("/orders/live/:orderId/item", auth, async (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    // 2️⃣ Insert item
- const [result] = await db.query(
-  `INSERT INTO live_order_items
-   (live_order_id, item_id, size_id, qty, added_at, kitchen_status, is_active)
-   VALUES (?, ?, ?, ?, NOW(), 'PENDING', 1)`,
-  [orderId, item_id, size_id || null, qty]
-);
+    // 2️⃣ Get price from item_sizes
+    let price = 0;
 
-res.json({
-  id: result.insertId,
-  message: "Item added successfully"
-});
+    if (size_id) {
 
+      const [[size]] = await db.query(
+        `SELECT price
+         FROM item_sizes
+         WHERE size_id = ?`,
+        [size_id]
+      );
 
+      if (!size) {
+        return res.status(400).json({ message: "Invalid size" });
+      }
+
+      price = Number(size.price) || 0;
+    }
+
+    // 3️⃣ Insert item with price
+    const [result] = await db.query(
+      `INSERT INTO live_order_items
+       (
+        live_order_id,
+        item_id,
+        size_id,
+        qty,
+        price,
+        added_at,
+        kitchen_status,
+        is_active
+       )
+       VALUES (?, ?, ?, ?, ?, NOW(), 'PENDING', 1)`,
+      [
+        orderId,
+        item_id,
+        size_id || null,
+        qty,
+        price
+      ]
+    );
+
+    res.json({
+      id: result.insertId,
+      message: "Item added successfully"
+    });
 
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Failed to add item" });
+
+    console.error("ADD ITEM ERROR:", err);
+
+    res.status(500).json({
+      message: "Failed to add item"
+    });
+
   }
+
 });
 
 router.delete("/orders/live/item/:id", auth, async (req, res) => {
