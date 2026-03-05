@@ -132,8 +132,7 @@ router.get("/orders/live/:orderId", auth, async (req, res) => {
         LEFT JOIN items i ON loi.item_id = i.item_id
         LEFT JOIN item_sizes s ON loi.size_id = s.size_id
         LEFT JOIN combos c ON loi.combo_id = c.combo_id
-        WHERE loi.live_order_id = ?
-        ORDER BY loi.live_order_item_id`,
+        WHERE loi.live_order_id = ?`,
       [orderId, restaurantId]
     );
 
