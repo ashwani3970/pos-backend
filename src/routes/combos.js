@@ -108,8 +108,8 @@ router.post("/orders/live/:orderId/combo", auth, async (req, res) => {
     // 2️⃣ Insert combo parent row
     const [parentResult] = await db.query(
         `INSERT INTO live_order_items
-        (live_order_id, combo_id, qty, price, is_combo_parent)
-        VALUES (?, ?, ?, ?, 1)`,
+        (live_order_id, combo_id, qty, is_combo_parent)
+        VALUES (?, ?, ?,  1)`,
         [
           orderId,
           combo_id,
@@ -125,8 +125,8 @@ router.post("/orders/live/:orderId/combo", auth, async (req, res) => {
 
         await db.query(
           `INSERT INTO live_order_items
-          (live_order_id, item_id, size_id, qty, price, combo_parent_id)
-          VALUES (?, ?, ?, ?, 0, ?)`,
+          (live_order_id, item_id, size_id, qty, combo_parent_id)
+          VALUES (?, ?, ?, ?, ?)`,
           [
             orderId,
             item.item_id,
