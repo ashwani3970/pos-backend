@@ -154,16 +154,12 @@ router.get("/orders/live/:orderId", auth, async (req, res) => {
     );
 
     // 3️⃣ Calculate subtotal
-    llet subtotal = 0;
-
-formattedItems.forEach(i => {
-
-  // ignore combo children
-    if (i.combo_parent_id) return;
-
-      subtotal += (Number(i.price) || 0) * i.qty;
-
-    });
+    let subtotal = 0;
+      formattedItems.forEach(i => {
+        // ignore combo children
+        if (i.combo_parent_id) return;
+        subtotal += (Number(i.price) || 0) * i.qty;
+      });
 
     const discountAmount = Number(order?.discount_amount || 0);
     const finalAmount = Math.max(subtotal - discountAmount, 0);
