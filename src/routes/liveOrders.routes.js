@@ -166,7 +166,7 @@ router.get("/orders/live/:orderId", auth, async (req, res) => {
 
     // 4️⃣ Send full data (used by Order Punch screen)
     res.json({
-      items,
+      items: formattedItems,
       subtotal,
       discount_type: order?.discount_type || null,
       discount_value: order?.discount_value || 0,
