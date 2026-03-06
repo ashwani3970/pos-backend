@@ -40,26 +40,9 @@ router.post("/orders/:orderId/close", auth, async (req, res) => {
     );
 
     // 3️⃣ Subtotal
-      let totalAmount = 0;
-
-      items.forEach(i => {
-
-        // 1️⃣ Combo parent → use stored combo price
-        if (i.is_combo_parent) {
-          totalAmount += (Number(i.price) || 0) * i.qty;
-          return;
-        }
-
-        // 2️⃣ Combo child → ignore (already counted in combo parent)
-        if (i.combo_parent_id) {
-          return;
-        }
-
-        // 3️⃣ Normal item → use size price
-        const price = Number(i.price || 0);
-        totalAmount += price * i.qty;
-
-      });
+    let totalAmount = items
+    .filter(i => !i.combo_parent_id)
+    .reduce((sum, i) => sum + (Number(i.price || 0) * i.qty), 0);
 
     // 4️⃣ Discount FROM LIVE ORDER (SOURCE OF TRUTH)
     const discountAmount = Number(order.discount_amount || 0);
