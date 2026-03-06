@@ -122,19 +122,24 @@ router.get("/orders/live/:orderId", auth, async (req, res) => {
     // 1️⃣ Fetch items
     const [items] = await db.query(
       `SELECT
-        loi.*,
-        i.item_name,
-        s.size_name,
-        s.price,
-        c.combo_name,
-        c.combo_price
+          loi.*,
+          i.item_name,
+          c.combo_name,
+          s.size_name
         FROM live_order_items loi
         LEFT JOIN items i ON loi.item_id = i.item_id
-        LEFT JOIN item_sizes s ON loi.size_id = s.size_id
         LEFT JOIN combos c ON loi.combo_id = c.combo_id
-        WHERE loi.live_order_id = ?`,
+        LEFT JOIN item_sizes s ON loi.size_id = s.size_id
+        WHERE loi.live_order_id = ?
+        ORDER BY loi.id`,
       [orderId, restaurantId]
     );
+
+    const formattedItems = items.map(i => ({
+      ...i,
+      display_name: i.combo_id ? i.combo_name : i.item_name
+    }));
+
 
     // 2️⃣ Fetch discount info from live_orders
     const [[order]] = await db.query(
@@ -149,25 +154,16 @@ router.get("/orders/live/:orderId", auth, async (req, res) => {
     );
 
     // 3️⃣ Calculate subtotal
-    let subtotal = 0;
+    llet subtotal = 0;
 
-      items.forEach(i => {
+formattedItems.forEach(i => {
 
-        // combo parent
-        if (i.is_combo_parent) {
-          subtotal += (Number(i.price) || 0) * i.qty;
-          return;
-        }
+  // ignore combo children
+    if (i.combo_parent_id) return;
 
-        // combo child → ignore
-        if (i.combo_parent_id) {
-          return;
-        }
+      subtotal += (Number(i.price) || 0) * i.qty;
 
-        // normal item
-        subtotal += (Number(i.price) || 0) * i.qty;
-
-      });
+    });
 
     const discountAmount = Number(order?.discount_amount || 0);
     const finalAmount = Math.max(subtotal - discountAmount, 0);
