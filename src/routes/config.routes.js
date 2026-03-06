@@ -31,7 +31,8 @@ const [
   ),
 
   db.query(
-    `SELECT s.* FROM item_sizes s
+    `SELECT s.*
+     FROM item_sizes s
      JOIN items i ON i.item_id = s.item_id
      WHERE i.restaurant_id = ?`,
     [restaurantId]
@@ -80,7 +81,7 @@ const [
 
 
 
-// 🔥 Build combo structure (groups + items)
+// Build combo structure (groups + items)
 
 const combosFormatted = combos[0].map(combo => {
 
@@ -106,7 +107,7 @@ res.json({
   categories: categories[0],
   items: items[0],
   sizes: sizes[0],
-  combos: combosFormatted,   // important change
+  combos: combosFormatted,
   tenders: tenders[0]
 });
 ```
