@@ -32,10 +32,9 @@ router.post("/orders/:orderId/close", auth, async (req, res) => {
 
     // 2️⃣ Fetch items
     const [items] = await conn.query(
-      `SELECT loi.*, s.price
-       FROM live_order_items loi
-       LEFT JOIN item_sizes s ON s.size_id = loi.size_id
-       WHERE loi.live_order_id = ?`,
+      `SELECT *
+      FROM live_order_items
+      WHERE live_order_id = ?`,
       [orderId]
     );
 
